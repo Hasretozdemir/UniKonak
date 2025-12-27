@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/filter_models.dart';
-import '../utils/constants.dart'; // Artık veriler buradan (AppConstants) geliyor
+import '../utils/constants.dart'; 
 
 class FilterSelectionSheet extends StatefulWidget {
   final String? initialCity;
@@ -46,11 +46,11 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
     _selectedPriceRange = widget.initialPriceRange;
     _selectedGender = widget.initialGender;
 
-    // Sayfa açılır açılmaz verileri çekmeye başla
+    
     _fetchCities();
   }
 
-  // FIREBASE'DEN ŞEHİRLERİ ÇEKEN FONKSİYON
+  
   Future<void> _fetchCities() async {
     try {
       final snapshot =
@@ -58,26 +58,25 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
 
       if (mounted) {
         setState(() {
-          // Gelen belgeleri CityFilter modeline çeviriyoruz
+       
           _fetchedCities = snapshot.docs.map((doc) {
             final data = doc.data();
             return CityFilter(
-              data['name'] ?? '', // Veritabanındaki 'name' alanı
+              data['name'] ?? '', 
               List<String>.from(data['universities'] ??
-                  []), // Veritabanındaki 'universities' listesi
+                  []), 
             );
           }).toList();
 
           _isLoading = false;
 
-          // Eğer sayfaya girerken zaten bir şehir seçiliyse (önceden seçilmişse)
-          // O şehrin üniversitelerini yükle
+      
           if (_selectedCity != null) {
             final filter = _fetchedCities.firstWhere(
               (f) => f.city == _selectedCity,
               orElse: () => CityFilter('', []),
             );
-            // Eğer şehir listede varsa üniversitelerini al, yoksa boş liste
+           
             if (filter.city.isNotEmpty) {
               _universitiesInSelectedCity = filter.universities;
             } else {
@@ -97,14 +96,14 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
   void _onCitySelected(String? city) {
     setState(() {
       if (_selectedCity == city) {
-        // Aynı şehre tıklandıysa seçimi kaldır
+ 
         _selectedCity = null;
         _universitiesInSelectedCity = [];
       } else {
-        // Yeni bir şehir seçildiyse
+   
         _selectedCity = city;
         if (city != null) {
-          // 'availableFilters' yerine artık '_fetchedCities' kullanıyoruz
+       
           final filter = _fetchedCities.firstWhere(
             (f) => f.city == city,
             orElse: () => CityFilter('', []),
@@ -114,7 +113,6 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
           _universitiesInSelectedCity = [];
         }
       }
-      // Şehir değişince üniversite seçimi sıfırlanmalı
       _selectedUniversity = null;
     });
   }
@@ -263,7 +261,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
   }
 
   Widget _buildCitySelector() {
-    // Veriler yüklenirken dönen halka göster
+    
     if (_isLoading) {
       return const Padding(
         padding: EdgeInsets.all(8.0),
@@ -271,7 +269,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
       );
     }
 
-    // Veri yoksa veya boş geldiyse mesaj göster
+  
     if (_fetchedCities.isEmpty) {
       return const Text("Kayıtlı şehir bulunamadı.");
     }
@@ -280,7 +278,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
       height: 45,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _fetchedCities.length, // Artık canlı listenin uzunluğu
+        itemCount: _fetchedCities.length, 
         itemBuilder: (context, index) {
           final city = _fetchedCities[index].city; // Canlı veriden şehri al
           final isSelected = _selectedCity == city;
@@ -314,7 +312,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
   }
 
   Widget _buildRoomSizeSelector() {
-    // ARTIK CONSTANTS DOSYASINDAN GELİYOR
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: AppConstants.roomSizes.map((size) {
@@ -369,7 +367,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
   }
 
   Widget _buildPriceSelector() {
-    // ARTIK CONSTANTS DOSYASINDAN GELİYOR
+    
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -416,7 +414,7 @@ class _FilterSelectionSheetState extends State<FilterSelectionSheet> {
                 _selectedGender,
               );
               Navigator.pop(
-                  context); // Filtre uygulandıktan sonra pencereyi kapat
+                  context); 
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppConstants.accentColor,
