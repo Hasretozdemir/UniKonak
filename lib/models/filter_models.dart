@@ -6,17 +6,17 @@ class CityFilter {
 
   CityFilter(this.city, this.universities);
 
-  // Firebase'den gelen veriyi modele çeviren fonksiyon
+
   factory CityFilter.fromSnapshot(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return CityFilter(
-      data['name'] ?? '', // Veritabanında şehir adı 'name' alanında olacak
+      data['name'] ?? '',
       List<String>.from(data['universities'] ?? []),
     );
   }
 }
 
-// PriceRange sınıfı aynı kalabilir, o veritabanından gelmese de olur.
+
 class PriceRange {
   final double minPrice;
   final double maxPrice;
