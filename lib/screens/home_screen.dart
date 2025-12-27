@@ -25,17 +25,16 @@ class _UniKonakHomeState extends State<UniKonakHome> {
   @override
   void initState() {
     super.initState();
-    // Sahte veri ataması kaldırıldı, artık veritabanından çekiyoruz.
+    
   }
 
-  // Yurtları çeken stream
+ 
   Stream<List<Dormitory>> readDormitories() {
     return FirebaseFirestore.instance.collection('yurtlar').snapshots().map(
         (snapshot) =>
             snapshot.docs.map((doc) => Dormitory.fromSnapshot(doc)).toList());
   }
 
-  // YENİ: Bildirimleri veritabanından çeken stream
   Stream<List<AppNotification>> getNotifications() {
     return FirebaseFirestore.instance
         .collection('bildirimler')
@@ -46,7 +45,7 @@ class _UniKonakHomeState extends State<UniKonakHome> {
             .toList());
   }
 
-  // YENİ: Bildirimi okundu işaretleyen fonksiyon
+  
   void _markAsRead(AppNotification notification) {
     if (notification.id.isNotEmpty) {
       FirebaseFirestore.instance
@@ -121,16 +120,16 @@ class _UniKonakHomeState extends State<UniKonakHome> {
               allDormitories: dorms, onToggleFavorite: _toggleFavorite);
         }
 
-        // 2. STREAM: Bildirim verilerini dinle (İç içe StreamBuilder)
+    
         return StreamBuilder<List<AppNotification>>(
           stream: getNotifications(),
           builder: (context, notifSnapshot) {
-            // Bildirimler yüklenene kadar boş liste göster
+        
             final notifications = notifSnapshot.data ?? [];
 
             return Column(
               children: [
-                // Header'a artık canlı bildirim listesini gönderiyoruz
+               
                 _buildCustomHeader(dorms, notifications),
                 Expanded(
                   child: HomeScreenContent(
@@ -146,7 +145,6 @@ class _UniKonakHomeState extends State<UniKonakHome> {
     );
   }
 
-  // Fonksiyon artık bildirim listesini parametre olarak alıyor
   Widget _buildCustomHeader(
       List<Dormitory> dorms, List<AppNotification> notifications) {
     final unreadCount = notifications.where((n) => !n.isRead).length;
@@ -199,9 +197,9 @@ class _UniKonakHomeState extends State<UniKonakHome> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => NotificationScreen(
-                          notifications: notifications, // Canlı veri
+                          notifications: notifications, 
                           onMarkAsRead:
-                              _markAsRead, // Okundu işaretleme fonksiyonu
+                              _markAsRead,
                         ),
                       ),
                     );
