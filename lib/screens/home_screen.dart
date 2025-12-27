@@ -9,7 +9,6 @@ import '../widgets/dormitory_card.dart';
 import '../widgets/filter_sheet.dart';
 import 'notification_screen.dart';
 import 'favorites_screen.dart';
-import '../data/dummy_data.dart';
 import 'profile_tab.dart';
 
 class UniKonakHome extends StatefulWidget {
@@ -21,19 +20,40 @@ class UniKonakHome extends StatefulWidget {
 
 class _UniKonakHomeState extends State<UniKonakHome> {
   int _selectedIndex = 0;
-  late List<AppNotification> _notifications;
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
     super.initState();
-    _notifications = sampleNotifications;
+    // Sahte veri ataması kaldırıldı, artık veritabanından çekiyoruz.
   }
 
+  // Yurtları çeken stream
   Stream<List<Dormitory>> readDormitories() {
     return FirebaseFirestore.instance.collection('yurtlar').snapshots().map(
         (snapshot) =>
             snapshot.docs.map((doc) => Dormitory.fromSnapshot(doc)).toList());
+  }
+
+  // YENİ: Bildirimleri veritabanından çeken stream
+  Stream<List<AppNotification>> getNotifications() {
+    return FirebaseFirestore.instance
+        .collection('bildirimler')
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => AppNotification.fromSnapshot(doc))
+            .toList());
+  }
+
+  // YENİ: Bildirimi okundu işaretleyen fonksiyon
+  void _markAsRead(AppNotification notification) {
+    if (notification.id.isNotEmpty) {
+      FirebaseFirestore.instance
+          .collection('bildirimler')
+          .doc(notification.id)
+          .update({'isRead': true});
+    }
   }
 
   void _toggleFavorite(Dormitory dorm) {
@@ -87,36 +107,49 @@ class _UniKonakHomeState extends State<UniKonakHome> {
   Widget _buildBody() {
     if (_selectedIndex == 2) return const ProfileTab();
 
+    // 1. STREAM: Yurt verilerini dinle
     return StreamBuilder<List<Dormitory>>(
       stream: readDormitories(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+      builder: (context, dormSnapshot) {
+        if (dormSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        final dorms = snapshot.data ?? [];
+        final dorms = dormSnapshot.data ?? [];
 
         if (_selectedIndex == 1) {
           return FavoritesScreen(
               allDormitories: dorms, onToggleFavorite: _toggleFavorite);
         }
 
-        return Column(
-          children: [
-            _buildCustomHeader(dorms),
-            Expanded(
-              child: HomeScreenContent(
-                allDormitories: dorms,
-                onToggleFavorite: _toggleFavorite,
-              ),
-            ),
-          ],
+        // 2. STREAM: Bildirim verilerini dinle (İç içe StreamBuilder)
+        return StreamBuilder<List<AppNotification>>(
+          stream: getNotifications(),
+          builder: (context, notifSnapshot) {
+            // Bildirimler yüklenene kadar boş liste göster
+            final notifications = notifSnapshot.data ?? [];
+
+            return Column(
+              children: [
+                // Header'a artık canlı bildirim listesini gönderiyoruz
+                _buildCustomHeader(dorms, notifications),
+                Expanded(
+                  child: HomeScreenContent(
+                    allDormitories: dorms,
+                    onToggleFavorite: _toggleFavorite,
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildCustomHeader(List<Dormitory> dorms) {
-    final unreadCount = _notifications.where((n) => !n.isRead).length;
+  // Fonksiyon artık bildirim listesini parametre olarak alıyor
+  Widget _buildCustomHeader(
+      List<Dormitory> dorms, List<AppNotification> notifications) {
+    final unreadCount = notifications.where((n) => !n.isRead).length;
 
     return Container(
       padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 40),
@@ -166,8 +199,9 @@ class _UniKonakHomeState extends State<UniKonakHome> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => NotificationScreen(
-                          notifications: _notifications,
-                          onMarkAsRead: (n) {},
+                          notifications: notifications, // Canlı veri
+                          onMarkAsRead:
+                              _markAsRead, // Okundu işaretleme fonksiyonu
                         ),
                       ),
                     );
