@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "233202630814",
+    "project_id": "unikonak-e767b",
+    "storage_bucket": "unikonak-e767b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:233202630814:android:a3aa33a9d9053ba67dbb8f",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAxofMzjX2_TOZnOHRHF1DWreVHZoxlYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
